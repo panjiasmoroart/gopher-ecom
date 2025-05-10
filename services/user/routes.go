@@ -31,6 +31,7 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	// get JSON payload
 	var user types.RegisterUserPayload
+
 	if err := utils.ParseJSON(r, &user); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
@@ -57,18 +58,22 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// fmt.Println(" password >>> ", hashedPassword)
+
 	// if it doesnt we create the new user
-	err = h.store.CreateUser(types.User{
+	newUser, err := h.store.CreateUser(types.User{
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Email:     user.Email,
 		Password:  hashedPassword,
 	})
 
+	// fmt.Println(" Debugging >>> 4")
+
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, nil)
+	utils.WriteJSON(w, http.StatusCreated, newUser)
 }

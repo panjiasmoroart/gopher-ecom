@@ -7,14 +7,15 @@ type User struct {
 	FirstName string    `json:"firstName"`
 	LastName  string    `json:"lastName"`
 	Email     string    `json:"email"`
-	Password  string    `json:"-"`
+	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
 type UserStore interface {
 	GetUserByEmail(email string) (*User, error)
 	GetUserByID(id int) (*User, error)
-	CreateUser(User) error
+	// CreateUser(User) error
+	CreateUser(User) (*User, error)
 }
 
 type RegisterUserPayload struct {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/go-sql-driver/mysql"
@@ -21,14 +22,14 @@ func main() {
 		ParseTime:            true,
 	}
 
-	db, err := db.NewMySQLStorage(cfg)
+	databaseInit, err := db.NewMySQLStorage(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	initStorage(db)
+	initStorage(databaseInit)
 
-	server := api.NewAPIServer(":9090", nil)
+	server := api.NewAPIServer(fmt.Sprintf(":%s", configs.Envs.Port), databaseInit)
 	if err := server.Run(); err != nil {
 		log.Fatal(err)
 	}
