@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+	"github.com/panjiasmoroart/gopher-ecom/configs"
 	"github.com/panjiasmoroart/gopher-ecom/services/auth"
 	"github.com/panjiasmoroart/gopher-ecom/types"
 	"github.com/panjiasmoroart/gopher-ecom/utils"
@@ -49,7 +50,14 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": user.Password})
+	secret := []byte(configs.Envs.JWTSecret)
+	token, err := auth.CreateJWT(secret, user.ID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
 }
 
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
