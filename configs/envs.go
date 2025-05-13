@@ -2,7 +2,6 @@ package configs
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 
@@ -32,16 +31,13 @@ func initConfig() Config {
 		DBPassword:             getEnv("DB_PASSWORD", "wsl_panjiasmoro"),
 		DBAddress:              fmt.Sprintf("%s:%s", getEnv("DB_HOST", "127.0.0.1"), getEnv("DB_PORT", "3306")),
 		DBName:                 getEnv("DB_NAME", "go_gopher_ecom"),
-		JWTSecret:              getEnv("JWT_SECRET", GetJWTSecret()),
+		JWTSecret:              GetJWTSecret(),
 		JWTExpirationInSeconds: getEnvAsInt("JWT_EXPIRATION_IN_SECONDS", 3600*24*7),
 	}
 }
 
 func GetJWTSecret() string {
 	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		log.Fatal("JWT_SECRET is not set in environment variables")
-	}
 
 	return secret
 }
