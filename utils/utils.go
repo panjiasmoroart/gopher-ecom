@@ -27,3 +27,18 @@ func ParseJSON(r *http.Request, payload any) error {
 
 	return json.NewDecoder(r.Body).Decode(payload)
 }
+
+func GetTokenFromRequest(r *http.Request) string {
+	tokenAuth := r.Header.Get("Authorization")
+	tokenQuery := r.URL.Query().Get("token")
+
+	if tokenAuth != "" {
+		return tokenAuth
+	}
+
+	if tokenQuery != "" {
+		return tokenQuery
+	}
+
+	return ""
+}
