@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type User struct {
 	ID        int       `json:"id"`
@@ -23,6 +26,29 @@ type Product struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+type CartCheckoutItem struct {
+	ProductID int `json:"productID"`
+	Quantity  int `json:"quantity"`
+}
+
+type Order struct {
+	ID        int       `json:"id"`
+	UserID    int       `json:"userID"`
+	Total     float64   `json:"total"`
+	Status    string    `json:"status"`
+	Address   string    `json:"address"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+type OrderItem struct {
+	ID        int       `json:"id"`
+	OrderID   int       `json:"orderID"`
+	ProductID int       `json:"productID"`
+	Quantity  int       `json:"quantity"`
+	Price     float64   `json:"price"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
 type UserStore interface {
 	GetUserByEmail(email string) (*User, error)
 	GetUserByID(id int) (*User, error)
@@ -35,7 +61,12 @@ type ProductStore interface {
 	GetProductsByID(ids []int) ([]Product, error)
 	GetProducts() ([]*Product, error)
 	CreateProduct(CreateProductPayload) error
-	UpdateProduct(Product) error
+	UpdateProduct(tx *sql.Tx, product Product) error
+}
+
+type OrderStore interface {
+	CreateOrder(tx *sql.Tx, order Order) (int, error)
+	CreateOrderItem(tx *sql.Tx, orderItem OrderItem) error
 }
 
 type CreateProductPayload struct {
@@ -56,4 +87,8 @@ type RegisterUserPayload struct {
 type LoginUserPayload struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
+}
+
+type CartCheckoutPayload struct {
+	Items []CartCheckoutItem `json:"items" validate:"required"`
 }

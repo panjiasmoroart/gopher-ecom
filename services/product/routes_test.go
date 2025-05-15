@@ -2,6 +2,7 @@ package product
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -134,7 +135,7 @@ func (m *mockProductStore) CreateProduct(product types.CreateProductPayload) err
 	return nil
 }
 
-func (m *mockProductStore) UpdateProduct(product types.Product) error {
+func (m *mockProductStore) UpdateProduct(tx *sql.Tx, product types.Product) error {
 	return nil
 }
 

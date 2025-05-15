@@ -34,6 +34,11 @@ func (s *Store) GetProductByID(productID int) (*types.Product, error) {
 }
 
 func (s *Store) GetProductsByID(productIDs []int) ([]types.Product, error) {
+	// untuk menangani strings: negative Repeat count
+	// if len(productIDs) == 0 {
+	// 	return nil, fmt.Errorf("no product IDs provided")
+	// }
+
 	placeholders := strings.Repeat(",?", len(productIDs)-1)
 	query := fmt.Sprintf("SELECT id, name, description, image, price, quantity, createdAt FROM products WHERE id IN (?%s)", placeholders)
 
@@ -47,6 +52,7 @@ func (s *Store) GetProductsByID(productIDs []int) ([]types.Product, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	products := []types.Product{}
 	for rows.Next() {
@@ -56,6 +62,11 @@ func (s *Store) GetProductsByID(productIDs []int) ([]types.Product, error) {
 		}
 
 		products = append(products, *p)
+	}
+
+	// Cek error dari rows (jika ada)
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return products, nil
@@ -89,7 +100,17 @@ func (s *Store) CreateProduct(product types.CreateProductPayload) error {
 	return nil
 }
 
-func (s *Store) UpdateProduct(product types.Product) error {
+// UpdateProductWithTx - Mengurangi stok produk menggunakan transaksi
+func (s *Store) UpdateProduct(tx *sql.Tx, product types.Product) error {
+	_, err := s.db.Exec("UPDATE products SET name = ?, price = ?, image = ?, description = ?, quantity = ? WHERE id = ?", product.Name, product.Price, product.Image, product.Description, product.Quantity, product.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Store) UpdateProductWithoutTx(product types.Product) error {
 	_, err := s.db.Exec("UPDATE products SET name = ?, price = ?, image = ?, description = ?, quantity = ? WHERE id = ?", product.Name, product.Price, product.Image, product.Description, product.Quantity, product.ID)
 	if err != nil {
 		return err
