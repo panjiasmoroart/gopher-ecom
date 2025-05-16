@@ -37,7 +37,7 @@ func (s *APIServer) Run() error {
 	productHandler.RegisterRoutes(subrouter)
 
 	orderStore := order.NewStore(s.db)
-	cartHandler := cart.NewHandler(productStore, orderStore, s.db)
+	cartHandler := cart.NewHandler(productStore, orderStore, userStore, s.db)
 	cartHandler.RegisterRoutes(subrouter)
 
 	log.Println("Listening on", s.addr)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+	"github.com/panjiasmoroart/gopher-ecom/services/auth"
 	"github.com/panjiasmoroart/gopher-ecom/types"
 	"github.com/panjiasmoroart/gopher-ecom/utils"
 )
@@ -14,26 +15,31 @@ import (
 type Handler struct {
 	store      types.ProductStore
 	orderStore types.OrderStore
+	userStore  types.UserStore
 	db         *sql.DB
 }
 
 func NewHandler(
 	store types.ProductStore,
 	orderStore types.OrderStore,
+	userStore types.UserStore,
 	db *sql.DB,
 ) *Handler {
 	return &Handler{
 		store:      store,
 		orderStore: orderStore,
+		userStore:  userStore,
 		db:         db,
 	}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/cart/checkout", h.handleCheckout).Methods(http.MethodPost)
+	router.HandleFunc("/cart/checkout", auth.WithJWTAuth(h.handleCheckout, h.userStore)).Methods(http.MethodPost)
 }
 
 func (h *Handler) handleCheckout(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserIDFromContext(r.Context())
+	fmt.Println("userID >>> ", userID)
 
 	var cart types.CartCheckoutPayload
 	if err := utils.ParseJSON(r, &cart); err != nil {
@@ -87,7 +93,7 @@ func (h *Handler) handleCheckout(w http.ResponseWriter, r *http.Request) {
 	//     }
 	// ]
 
-	orderID, totalPrice, err := h.createOrder(products, cart.Items)
+	orderID, totalPrice, err := h.createOrder(products, cart.Items, userID)
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return

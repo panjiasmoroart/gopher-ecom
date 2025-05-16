@@ -55,12 +55,15 @@ func calculateTotalPrice(cartItems []types.CartCheckoutItem, products map[int]ty
 // float64: Total harga pesanan.
 // error: Error (jika ada), terutama dari pengecekan stok.
 
-func (h *Handler) createOrder(products []types.Product, cartItems []types.CartCheckoutItem) (int, float64, error) {
+func (h *Handler) createOrder(products []types.Product, cartItems []types.CartCheckoutItem, userID int) (int, float64, error) {
 	// Create a map of products for easier access
 	productsMap := make(map[int]types.Product)
 	for _, product := range products {
 		productsMap[product.ID] = product
 	}
+
+	// map[1:{1 Apple.jpg 1.5 100 2025-05-16 14:00:00 +0000 UTC}
+	//  2:{2 Banana.jpg 1.0 200 2025-05-16 14:00:00 +0000 UTC}]
 
 	// Check if all products are available
 	if err := checkIfCartIsInStock(cartItems, productsMap); err != nil {
@@ -91,7 +94,7 @@ func (h *Handler) createOrder(products []types.Product, cartItems []types.CartCh
 
 	// Create order record
 	orderID, err := h.orderStore.CreateOrder(tx, types.Order{
-		UserID:  1,
+		UserID:  userID,
 		Total:   totalPrice,
 		Status:  "pending",
 		Address: "Jl. Pemuda Sawangan Baru - Depok",
